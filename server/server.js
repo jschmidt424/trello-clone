@@ -4,12 +4,25 @@ const unless = require("express-unless");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const userRouter = require("./Routes/userRoute");
+const auth = require("./Middlewares/auth");
 
 dotenv.config();
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// auth verification
+auth.verifyToken.unless = unless;
+
+app.use(
+  auth.verifyToken.unless({
+    path: [
+      { url: "/user/login", methods: ["POST"] },
+      { url: "/user/register", methods: ["POST"] },
+    ],
+  })
+);
 
 // Connect to MongoDB
 mongoose.Promise = global.Promise;
