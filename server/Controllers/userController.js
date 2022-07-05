@@ -16,6 +16,29 @@ const register = async (req, res) => {
   });
 };
 
+const login = async (req, res) => {
+  const { email, password } = req.body;
+  if (!(email && password))
+    return res.status(400).send({ errMsg: "Please fill all required areas!" });
+
+  await userService.login(email, (err, result) => {
+    if (err) return res.status(400).send(err);
+
+    const hashedPassword = result.password;
+    if (!bcrypt.compareSync(password, hashedPassword))
+      return res
+        .status(400)
+        .send({ errMessage: "Your email/password is wrong!" });
+
+    result.password = undefined;
+    result.__v = undefined;
+    return res
+      .status(200)
+      .send({ msg: "User login successful!", user: result });
+  });
+};
+
 module.exports = {
   register,
+  login,
 };
